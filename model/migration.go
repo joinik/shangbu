@@ -10,6 +10,9 @@ func Migration() {
 		AutoMigrate(
 			// &model.User{},
 			&Area{},
+			&User{},
+			&UserProfile{},
+			&Address{},
 		)
 
 	if err != nil {

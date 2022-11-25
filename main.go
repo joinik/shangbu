@@ -33,14 +33,5 @@ func main() {
 	r := routes.NewRouter()
 	_ = r.Run(config.HttpPort)
 
-	// list := []*Node{
-	//     {4, 3, "ABA", nil},
-	//     {3, 1, "AB", nil},
-	//     {1, 0, "A", nil},
-	//     {2, 1, "AA", nil},
-	// }
-	// res := getTreeRecursive(list, 0)
-	// bytes, _ := json.MarshalIndent(res, "", "    ")
-	// fmt.Printf("%s\n", bytes)
 
 }
