@@ -1,8 +1,11 @@
 package model
 
 import (
+
 	"database/sql/driver"
 	"errors"
+
+
 	"time"
 
 	"gorm.io/gorm"
@@ -17,13 +20,16 @@ import (
 //   DeletedAt gorm.DeletedAt `gorm:"index"`
 // }
 
+
 // User 用户基本模型
+
 type User struct {
 	gorm.Model
 	UserName         string    `gorm:"unique; type:varchar(20)"` // 用户名
 	Mobile           string    `gorm:"unique; not null"`         // 手机号
 	Avatar           string    // 头像
 	Last_login       time.Time // 最后登陆时间
+
 	Introduce        string    // 简介
 	Status           uint      `gorm:"default:1"`         // 状态 0 不可用  1 可用
 	Business         uint      `gorm:"default:0"`         // 商家认证 0 不是 1 是
@@ -45,7 +51,7 @@ type User struct {
 
 // 自定义性别
 type MyGender struct {
-	string
+	Gender string
 }
 
 func NewGender(v string) (MyGender, error) {
@@ -53,17 +59,25 @@ func NewGender(v string) (MyGender, error) {
 	if v != "MAN" && v != "WOMAN" {
 		return g, errors.New("只支持 “MAN” 或者 “WOMAN”")
 	}
-	g.string = v
+	g.Gender = v
 	return g, nil
 }
 
 // 实现这两个 Value Scan 方法 才能满足 数据库读写
 func (g MyGender) Value() (driver.Value, error) {
-	return g.string, nil
+	return g.Gender, nil
 }
 
 func (g *MyGender) Scan(v interface{}) error {
-	g.string = v.(string)
+
+	g.Gender = string(v.([]uint8))
+<<<<<<< HEAD
+=======
+	g.Gender = v.(string)
+>>>>>>> 441f554 (添加swag文档)
+=======
+
+>>>>>>> 7f04f11 (地址查询，完成)
 	return nil
 }
 
