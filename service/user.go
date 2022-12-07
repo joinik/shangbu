@@ -45,6 +45,9 @@ type Userservice struct {
 func (service *Userservice) Register(ctx context.Context) serializer.Response {
 	code := e.SUCCESS
 
+	// 数据判断
+	
+
 	var count int64
 	dbClient := model.NewDBClient(ctx)
 

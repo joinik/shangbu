@@ -45,7 +45,7 @@ type User struct {
 
 // 自定义性别
 type MyGender struct {
-	string
+	Gender string
 }
 
 func NewGender(v string) (MyGender, error) {
@@ -53,17 +53,17 @@ func NewGender(v string) (MyGender, error) {
 	if v != "MAN" && v != "WOMAN" {
 		return g, errors.New("只支持 “MAN” 或者 “WOMAN”")
 	}
-	g.string = v
+	g.Gender = v
 	return g, nil
 }
 
 // 实现这两个 Value Scan 方法 才能满足 数据库读写
 func (g MyGender) Value() (driver.Value, error) {
-	return g.string, nil
+	return g.Gender, nil
 }
 
 func (g *MyGender) Scan(v interface{}) error {
-	g.string = v.(string)
+	g.Gender = v.(string)
 	return nil
 }
 
