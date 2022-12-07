@@ -10,11 +10,14 @@ import (
 func RegisterUser(c *gin.Context) {
 	userService := service.Userservice{}
 	if err := c.ShouldBind(&userService); err == nil {
-		res := userService.Register(c.Request.Context())
+		res := userService.Registers(c.Request.Context())
 		c.JSON(200, res)
-	} else {
+	} 
+	// else {
+	// 	c.JSON(400, ErrorResponse(err))
+	// 	util.LogrusObj.Infoln(err)
+	// }
 
-	}
 
 }
 

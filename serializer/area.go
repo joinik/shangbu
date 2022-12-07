@@ -42,5 +42,7 @@ func BuildArea(area_li []*model.Area) []*Area {
 	}
 
 	// 序列化地址数
+
 	return BuildAreaTree(area_list, 0)
+
 }
