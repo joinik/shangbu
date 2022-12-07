@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"errors"
+
 	"time"
 
 	"gorm.io/gorm"
@@ -18,19 +19,21 @@ import (
 // }
 
 // User 用户基本模型
+
 type User struct {
 	gorm.Model
-	UserName         string    `gorm:"unique; type:varchar(20)"` // 用户名
-	Mobile           string    `gorm:"unique; not null"`         // 手机号
-	Avatar           string    // 头像
-	Last_login       time.Time // 最后登陆时间
-	Introduce        string    // 简介
-	Status           uint      `gorm:"default:1"`         // 状态 0 不可用  1 可用
-	Business         uint      `gorm:"default:0"`         // 商家认证 0 不是 1 是
-	Dianzan_num      uint      `gorm:"default:0"`         // 点赞数
-	Travel_note_num  uint      `gorm:"default:0"`         // 游记数
-	DianLiangAreaNum uint      `gorm:"default:0"`         // 点亮地区数
-	Last_area_id     uint      `gorm:"ForeignKey:AreaID"` // 用户上次位置
+	UserName   string    `gorm:"unique; type:varchar(20)"` // 用户名
+	Mobile     string    `gorm:"unique; not null"`         // 手机号
+	Avatar     string    // 头像
+	Last_login time.Time // 最后登陆时间
+
+	Introduce        string // 简介
+	Status           uint   `gorm:"default:1"`         // 状态 0 不可用  1 可用
+	Business         uint   `gorm:"default:0"`         // 商家认证 0 不是 1 是
+	Dianzan_num      uint   `gorm:"default:0"`         // 点赞数
+	Travel_note_num  uint   `gorm:"default:0"`         // 游记数
+	DianLiangAreaNum uint   `gorm:"default:0"`         // 点亮地区数
+	Last_area_id     uint   `gorm:"ForeignKey:AreaID"` // 用户上次位置
 
 	// has one
 	UserProfile UserProfile `gorm:"ForeignKey:UserID"`
@@ -63,14 +66,14 @@ func (g MyGender) Value() (driver.Value, error) {
 }
 
 func (g *MyGender) Scan(v interface{}) error {
-	g.Gender = v.(string)
+	g.Gender = string(v.([]uint8))
 	return nil
 }
 
 // User 用户详情模型
 type UserProfile struct {
-	UserProfileID    uint     `gorm:"primaryKey"`
-	UserID           uint     
+	UserProfileID    uint `gorm:"primaryKey"`
+	UserID           uint
 	UserGender       MyGender `gorm:"default:MAN"`
 	Age              uint
 	Email            string `gorm:"type: varchar(20)"`

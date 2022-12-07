@@ -66,7 +66,6 @@ func NewDBClient(ctx context.Context) *gorm.DB {
 	return db.WithContext(ctx)
 }
 
-
 type NewDBDao struct {
 	*gorm.DB
 }
@@ -74,5 +73,3 @@ type NewDBDao struct {
 func NewDBDaoByDB(db *gorm.DB) *NewDBDao {
 	return &NewDBDao{db}
 }
-
-
