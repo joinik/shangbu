@@ -47,6 +47,8 @@ func Database(connRead, connWrite string) {
 	// 超时
 	sqlDB.SetConnMaxLifetime(time.Second * 30)
 
+	
+
 	_db = db
 
 	// 读写 分离设置

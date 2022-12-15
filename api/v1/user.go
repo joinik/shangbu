@@ -1,6 +1,7 @@
-package api
+package v1
 
 import (
+	util "go_ctry/pkg/utils"
 	"go_ctry/service"
 
 	"github.com/gin-gonic/gin"
@@ -8,24 +9,37 @@ import (
 
 // 注册用户 api
 func RegisterUser(c *gin.Context) {
-	userService := service.Userservice{}
+	var userService service.Userservice
 	if err := c.ShouldBind(&userService); err == nil {
-		res := userService.Registers(c.Request.Context())
+		res := userService.Register(c.Request.Context())
 		c.JSON(200, res)
-	} 
-	// else {
-	// 	c.JSON(400, ErrorResponse(err))
-	// 	util.LogrusObj.Infoln(err)
-	// }
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
 
+}
+
+// 修改用户信息
+func UpdateUserInfo(c *gin.Context) {
+	var userService service.Userservice
+	claims, _ := util.ParseToken(c.GetHeader("Authorization"))
+	if err := c.ShouldBind(&userService); err == nil {
+		res := userService.UpdateUserInfo(c.Request.Context(), claims.ID)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
 
 }
 
 // 查询用户详情
 func GetUserProfile(c *gin.Context) {
-	userService := service.Userservice{}
+	var userService service.Userservice
+	claims, _ := util.ParseToken(c.GetHeader("Authorization"))
 	if err := c.ShouldBind(&userService); err == nil {
-		res := userService.GetUserProfile(c.Request.Context(), c.Param("id") )
+		res := userService.GetUserProfile(c.Request.Context(), claims.ID)
 		c.JSON(200, res)
 	}
 }

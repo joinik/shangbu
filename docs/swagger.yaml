@@ -1,12 +1,57 @@
+basePath: /main.go
+definitions:
+  serializer.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      msg:
+        type: string
+      status:
+        type: integer
+    type: object
+  service.AreaService:
+    properties:
+      area_id:
+        type: integer
+      area_name:
+        type: string
+      city_code:
+        type: string
+      city_level:
+        type: integer
+      parent_id:
+        type: integer
+    type: object
 info:
   contact: {}
-  description: This is a sample Server pets
-  title: ToDoList API
+  description: This is a go_ctry Server pets
+  title: go_ctry API
   version: 0.0.1
-paths: {}
-securityDefinitions:
-  ApiKeyAuth:
-    in: f
-    name: FanOne
-    type: apiKey
+paths:
+  /api/v1/area/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据地区ID 查询 地区数据
+      parameters:
+      - description: area id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.AreaService'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: 返回 地区数据
+      tags:
+      - Area
 swagger: "2.0"

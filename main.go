@@ -1,13 +1,8 @@
 package main
 
-
-
-
 import (
 	config "go_ctry/conf"
 	"go_ctry/routes"
-	
-	_ "go_ctry/docs" // 这里需要引入本地已生成文档
 )
 
 // import (
@@ -33,17 +28,7 @@ import (
 //     return res
 // }
 
-
-// @title go_ctry API
-// @version 0.0.1
-// @description This is a sample Server pets
-// @securityDefinitions.apikey ApiKeyAuth
-// @in f
-// @name FanOne
-// @BasePath /main.go
 func main() {
-	
-
 	config.Init()
 	r := routes.NewRouter()
 	_ = r.Run(config.HttpPort)

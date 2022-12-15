@@ -3,7 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"errors"
-
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -36,7 +36,7 @@ type User struct {
 	Last_area_id     uint   `gorm:"ForeignKey:AreaID"` // 用户上次位置
 
 	// has one
-	UserProfile UserProfile `gorm:"ForeignKey:UserID"`
+	UserProfile UserProfile `gorm:"ForeignKey:UserID; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 // 设置表名
@@ -48,7 +48,7 @@ type User struct {
 
 // 自定义性别
 type MyGender struct {
-	Gender string
+	Gender []byte
 }
 
 func NewGender(v string) (MyGender, error) {
@@ -56,7 +56,7 @@ func NewGender(v string) (MyGender, error) {
 	if v != "MAN" && v != "WOMAN" {
 		return g, errors.New("只支持 “MAN” 或者 “WOMAN”")
 	}
-	g.Gender = v
+	g.Gender = []byte(v)
 	return g, nil
 }
 
@@ -66,7 +66,31 @@ func (g MyGender) Value() (driver.Value, error) {
 }
 
 func (g *MyGender) Scan(v interface{}) error {
-	g.Gender = string(v.([]uint8))
+	// g.Gender = v.(string)
+	// g.Gender = v.([]uint8)
+
+	switch src := v.(type) {
+	case nil:
+		return nil
+
+	case string:
+		// if an empty gender comes from a table, we return a null gender
+		if src == "" {
+			return nil
+		}
+		g.Gender = []byte(src)
+
+	case []byte:
+		// if an empty gender comes from a table, we return a null gender
+		if len(src) == 0 {
+			return nil
+		}
+		g.Gender = src
+
+	default:
+		return fmt.Errorf("Scan: unable to scan type %T into Gender", src)
+	}
+
 	return nil
 }
 
@@ -74,7 +98,7 @@ func (g *MyGender) Scan(v interface{}) error {
 type UserProfile struct {
 	UserProfileID    uint `gorm:"primaryKey"`
 	UserID           uint
-	UserGender       MyGender `gorm:"default:MAN"`
+	UserGender       MyGender `gorm:"type: varchar(5); default: 'MAN'"`
 	Age              uint
 	Email            string `gorm:"type: varchar(20)"`
 	DefaultAddressID uint   `gorm:"default: null"`
