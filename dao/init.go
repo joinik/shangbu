@@ -1,8 +1,9 @@
-package model
+package dao
 
 import (
 	"context"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -47,8 +48,6 @@ func Database(connRead, connWrite string) {
 	// 超时
 	sqlDB.SetConnMaxLifetime(time.Second * 30)
 
-	
-
 	_db = db
 
 	// 读写 分离设置
@@ -60,6 +59,7 @@ func Database(connRead, connWrite string) {
 		}))
 
 	Migration()
+
 }
 
 // 创建会话

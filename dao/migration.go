@@ -1,7 +1,8 @@
-package model
+package dao
 
 import (
 	"fmt"
+	"go_ctry/model"
 	"os"
 )
 
@@ -9,10 +10,10 @@ func Migration() {
 	err := _db.Set("gorm:table_options", "charset=utf8mb4").
 		AutoMigrate(
 			// &model.User{},
-			&Area{},
-			&User{},
-			&UserProfile{},
-			&Address{},
+			&model.Area{},
+			&model.User{},
+			&model.UserProfile{},
+			&model.Address{},
 		)
 
 	if err != nil {

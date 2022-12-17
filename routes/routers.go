@@ -26,6 +26,9 @@ func NewRouter() *gin.Engine {
 		// 用户注册
 		v1.POST("register", api.RegisterUser)
 
+		// 用户登录
+		v1.POST("login", api.LoginUser)
+
 		// 需要登录保护的
 		authed := v1.Group("/")
 		authed.Use(middleware.JWT())

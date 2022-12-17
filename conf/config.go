@@ -2,7 +2,7 @@ package conf
 
 import (
 	"fmt"
-	"go_ctry/model"
+	"go_ctry/dao"
 	"strings"
 
 	"gopkg.in/ini.v1"
@@ -54,7 +54,7 @@ func Init() {
 	pathRead := strings.Join([]string{DbUser, ":", DbPassWord, "@tcp(", DbHost, ":", DbPort, ")/", DbName, "?charset=utf8&parseTime=true"}, "")
 	pathWrite := strings.Join([]string{DbUser, ":", DbPassWord, "@tcp(", DbHost, ":", DbPort, ")/", DbName, "?charset=utf8&parseTime=true"}, "")
 
-	model.Database(pathRead, pathWrite)
+	dao.Database(pathRead, pathWrite)
 
 }
 

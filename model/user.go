@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -18,26 +19,46 @@ import (
 //   DeletedAt gorm.DeletedAt `gorm:"index"`
 // }
 
+const (
+	PassWordCost = 12 //密码加密难度
+)
+
 // User 用户基本模型
 
 type User struct {
 	gorm.Model
-	UserName   string    `gorm:"unique; type:varchar(20)"` // 用户名
-	Mobile     string    `gorm:"unique; not null"`         // 手机号
-	Avatar     string    // 头像
-	Last_login time.Time // 最后登陆时间
-
-	Introduce        string // 简介
-	Status           uint   `gorm:"default:1"`         // 状态 0 不可用  1 可用
-	Business         uint   `gorm:"default:0"`         // 商家认证 0 不是 1 是
-	Dianzan_num      uint   `gorm:"default:0"`         // 点赞数
-	Travel_note_num  uint   `gorm:"default:0"`         // 游记数
-	DianLiangAreaNum uint   `gorm:"default:0"`         // 点亮地区数
-	Last_area_id     uint   `gorm:"ForeignKey:AreaID"` // 用户上次位置
+	UserName         string    `gorm:"unique; type:varchar(20)"` // 用户名
+	Mobile           string    `gorm:"unique; not null"`         // 手机号
+	Avatar           string    // 头像
+	Last_login       time.Time // 最后登陆时间
+	PassWorld        string    `gorm:"type:varchar(20)"` // 密码
+	Introduce        string    // 简介
+	Status           uint      `gorm:"default:1"`         // 状态 0 不可用  1 可用
+	Business         uint      `gorm:"default:0"`         // 商家认证 0 不是 1 是
+	Dianzan_num      uint      `gorm:"default:0"`         // 点赞数
+	Travel_note_num  uint      `gorm:"default:0"`         // 游记数
+	DianLiangAreaNum uint      `gorm:"default:0"`         // 点亮地区数
+	Last_area_id     uint      `gorm:"ForeignKey:AreaID"` // 用户上次位置
 
 	// has one
 	UserProfile UserProfile `gorm:"ForeignKey:UserID; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
+
+func (user *User) SetPassword(password string) error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), PassWordCost)
+	if err != nil {
+		return err
+	}
+	user.PassWorld = string(bytes)
+	return nil
+}
+
+func (user *User) CheckPassword(password string) bool  {
+	err := bcrypt.CompareHashAndPassword([]byte(user.PassWorld), []byte(password))
+	return err == nil
+}
+
+
 
 // 设置表名
 

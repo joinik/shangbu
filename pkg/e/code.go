@@ -18,6 +18,8 @@ const (
 	ErrorNotExistAddress    = 10008
 	ErrorExistFavorite      = 10009
 	ErrorUserNotFound       = 10010
+	ErrorExistPhone         = 10011
+	ErrorNotExistPhone      = 10012
 
 	//店家错误
 	ErrorBossCheckTokenFail        = 20001
