@@ -29,7 +29,7 @@ type Userservice struct {
 	Age       uint   `form:"age" json:"age"`
 	Email     string `form:"email" json:"email"`     // 邮箱
 	Vcode     string `form:"vcode" json:"vcode"`     // 手机验证码
-	options   string `form:"options" json:"options"` // 登录方式 1 手机登录的方式  2 账号登录方式
+	Options   string `form:"options" json:"options"` // 登录方式 1 手机登录的方式  2 账号登录方式
 }
 
 // 用户注册服务
@@ -38,6 +38,7 @@ func (service *Userservice) Register(ctx context.Context) serializer.Response {
 
 	// 生成 userDao 用于数据库操作
 	userDao := dao.NewUserDao(ctx)
+	var user *model.User
 
 	// 1. 判断短信 验证码
 	// if service.Vcode
@@ -52,7 +53,7 @@ func (service *Userservice) Register(ctx context.Context) serializer.Response {
 		}
 	}
 
-	user, exit, err := userDao.ExitOrNotByPhone(service.Mobile)
+	_, exit, err := userDao.ExitOrNotByPhone(service.Mobile)
 
 	if err != nil {
 		code = e.ErrorDatabase
@@ -138,7 +139,7 @@ func (service *Userservice) Login(ctx context.Context) serializer.Response {
 	userDao := dao.NewUserDao(ctx)
 
 	// 1. 判断 登录 方式
-	if service.options == "1" {
+	if service.Options == "1" {
 		// 手机号 + 验证码 登录
 
 		// 1. 判断 手机号 合法
@@ -178,11 +179,50 @@ func (service *Userservice) Login(ctx context.Context) serializer.Response {
 			Data:   serializer.TokenData{User: serializer.BuildUser(user), Token: token, RefreshToken: refreshToken},
 			Msg:    e.GetMsg(code),
 		}
-	} else if service.options == "2" {
+	} else if service.Options == "2" {
 		// 账号 + 密码
 
+		user, exit, err := userDao.ExitOrNotByUserName(service.UserName)
+
+		if err != nil {
+			logging.Info(err)
+			code = e.ErrorDatabase
+			return serializer.Response{
+				Status: code,
+				Msg:    e.GetMsg(code),
+			}
+		}
+
+
+		if !exit {
+			code = e.ErrorNotCompare
+			return serializer.Response{
+				Status: code,
+				Msg: e.GetMsg(code),
+			}
+		} 
+
+		flag := user.CheckPassword(service.Pwd)
+		
+		if !flag {
+			code = e.ErrorNotCompare
+			return serializer.Response{
+				Status: code,
+				Msg: e.GetMsg(code),
+			}
+		}
+		token, refreshToken, err := util.MyGenerateToken(user.ID, user.UserName, 0, true)
+		if err != nil {
+			logging.Info(err)
+			code = e.ErrorAuthToken
+			return serializer.Response{
+				Status: code,
+				Msg:    e.GetMsg(code),
+			}
+		}
 		return serializer.Response{
 			Status: code,
+			Data:   serializer.TokenData{User: serializer.BuildUser(user), Token: token, RefreshToken: refreshToken},
 			Msg:    e.GetMsg(code),
 		}
 
@@ -204,7 +244,7 @@ func (service *Userservice) UpdatePwd(ctx context.Context, uid uint) serializer.
 	userDao := dao.NewUserDao(ctx)
 
 	// 1.判断密码 合法性
-	if rest, _ := regexp.Match(`^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$`, []byte(service.Pwd)); !rest {
+	if rest, _ := regexp.Match(`^(?:.*[A-Za-z])(?:.*\d)[A-Za-z\d]{4,18}$`, []byte(service.Pwd)); !rest {
 		return serializer.Response{
 			Status: code,
 			Msg:    "数据不正确",
@@ -371,7 +411,7 @@ func (service *Userservice) GetUserProfile(ctx context.Context, userid uint) ser
 func (service *Userservice) UploadHead(ctx context.Context, userid uint, file multipart.File, fileSize int64) serializer.Response {
 	code := e.SUCCESS
 	var err error
-	
+
 	path, err := UploadToQiNiu(file, fileSize)
 	if err != nil {
 		code = e.ErrorUploadFile
@@ -399,8 +439,8 @@ func (service *Userservice) UploadHead(ctx context.Context, userid uint, file mu
 		code = e.ErrorDatabase
 		return serializer.Response{
 			Status: code,
-			Msg: e.GetMsg(code),
-			Error: err.Error(),
+			Msg:    e.GetMsg(code),
+			Error:  err.Error(),
 		}
 	}
 

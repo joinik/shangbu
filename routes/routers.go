@@ -33,10 +33,15 @@ func NewRouter() *gin.Engine {
 		authed := v1.Group("/")
 		authed.Use(middleware.JWT())
 		{
+			// 修改用户密码
+			authed.POST("updatePwd", api.UpdatePwd)
 			// 查询用户详情
 			authed.GET("userProfile", api.GetUserProfile)
 			// 修改用户详情
 			authed.PUT("userprofile", api.UpdateUserInfo)
+			// 上传用户头像
+			authed.POST("uploadAvatar", api.UploadAvatar)
+
 		}
 
 	}

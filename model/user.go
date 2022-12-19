@@ -31,7 +31,7 @@ type User struct {
 	Mobile           string    `gorm:"unique; not null"`         // 手机号
 	Avatar           string    // 头像
 	Last_login       time.Time // 最后登陆时间
-	PassWorld        string    `gorm:"type:varchar(20)"` // 密码
+	PassWorld        string    `gorm:"type:varchar(256)"` // 密码
 	Introduce        string    // 简介
 	Status           uint      `gorm:"default:1"`         // 状态 0 不可用  1 可用
 	Business         uint      `gorm:"default:0"`         // 商家认证 0 不是 1 是

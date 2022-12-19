@@ -6,7 +6,7 @@ import (
 
 	// "encoding/json"
 
-	"go_ctry/model"
+	"go_ctry/dao"
 	"go_ctry/pkg/e"
 	"go_ctry/serializer"
 
@@ -28,63 +28,40 @@ func (service *AreaService) Get(ctx context.Context, aid string) serializer.Resp
 
 	// 转换 adi 为 int 类型
 	areaID, _ := strconv.Atoi(aid)
-	// 声明一个空的 Area 模型类
-	area := &model.Area{}
 
-	// 定义切片 area_li
-	var area_li []*model.Area
-
-	// 创建会话
-	db := model.NewDBClient(ctx)
+	areaDao := dao.NewAreaDao(ctx)
 
 	if areaID != 0 {
 		// 根据 aid 查询 下一级
-		err := db.Model(area).Where("parent_id=?", uint(areaID)).Find(&area).Error
+		area, err := areaDao.GetAreaByParentID(uint(areaID))
 		if err != nil {
 			logging.Info(err)
 		}
 
-		// 根据市辖区 查询 下一级(市)
-		err = db.Model(area).Where("parent_id=?", uint(area.ID)).Find(&area_li).Error
-		if err != nil {
-			logging.Info(err)
-		}
-
-		// 查询 县
-		for _, item := range area_li {
-			var child []*model.Area
-			err := db.Model(area).Where("parent_id=?", uint(item.ID)).Find(&child).Error
+		if len(area) == 1 {
+			// 查询 下一级
+			areas, err := areaDao.GetAreaByParentID(uint(area[0].ID))
 			if err != nil {
 				logging.Info(err)
+				code = e.ErrorDatabase
+				return serializer.Response{
+					Status: code,
+					Msg:    e.GetMsg(code),
+				}
 			}
-			area_li = append(area_li, child...)
 
-			// 查询 镇
-			// for _, item := range area_li {
-			// 	var child []*model.Area
-			// 	err := db.Model(area).Where("parent_id=?", uint(item.ID)).Find(&child).Error
-			// 	if err != nil {
-			// 		logging.Info(err)
-			// 	}
-			// 	area_li = append(area_li, child...)
-
-			// 	// 查询 村
-			// 	for _, item := range area_li {
-			// 		var child []*model.Area
-			// 		err := db.Model(area).Where("parent_id=?", uint(item.ID)).Find(&child).Error
-			// 		if err != nil {
-			// 			logging.Info(err)
-			// 		}
-			// 		area_li = append(area_li, child...)
-
-			// 	}
-
-			// }
+			// 调用序列化数据
+			res := serializer.BuildArea(areas, uint(area[0].ID))
+			return serializer.Response{
+				Status: code,
+				Data:   res,
+				Msg:    e.GetMsg(code),
+			}
 
 		}
 
 		// 调用序列化数据
-		res := serializer.BuildArea(area_li, uint(area.ID))
+		res := serializer.BuildArea(area, uint(areaID))
 		return serializer.Response{
 			Status: code,
 			Data:   res,
@@ -93,19 +70,24 @@ func (service *AreaService) Get(ctx context.Context, aid string) serializer.Resp
 
 	} else {
 		// mysql 查询  所有 省份
-		err := db.Model(area).Where("parent_id=?", 0).Find(&area_li).Error
+		child, err := areaDao.GetAreaByParentID(uint(0))
 		if err != nil {
 			logging.Info(err)
+			code = e.ErrorDatabase
+			return serializer.Response{
+				Status: code,
+				Msg:    e.GetMsg(code),
+			}
 		}
 
-	}
+		// 调用序列化数据
+		res := serializer.BuildArea(child, uint(areaID))
+		return serializer.Response{
+			Status: code,
+			Data:   res,
+			Msg:    e.GetMsg(code),
+		}
 
-	// 调用序列化数据
-	res := serializer.BuildArea(area_li, uint(areaID))
-	return serializer.Response{
-		Status: code,
-		Data:   res,
-		Msg:    e.GetMsg(code),
 	}
 
 }

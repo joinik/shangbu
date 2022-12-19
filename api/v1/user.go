@@ -32,6 +32,19 @@ func LoginUser(c *gin.Context) {
 }
 
 
+func UpdatePwd(c *gin.Context) {
+	var updatePwdService service.Userservice
+	claims, _ := util.ParseToken(c.GetHeader("Authorization"))
+	if err := c.ShouldBind(&updatePwdService); err == nil {
+		res := updatePwdService.UpdatePwd(c.Request.Context(), claims.ID)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
+}
+
+
 
 // 修改用户信息
 func UpdateUserInfo(c *gin.Context) {

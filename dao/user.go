@@ -47,14 +47,14 @@ func (dao *UserDao) UpdateUserProfileById(uId uint, user *map[string]interface{}
 // ExitOrNotByUserName 根据手机号 查询用户是否存在
 func (dao *UserDao) ExitOrNotByUserName(name string) (user *model.User, exist bool, err error) {
 	var count int64
-	err = dao.DB.Model(&model.User{}).Where("user_name=?", name).
+	err = dao.DB.Model(&model.User{}).Where("user_name=? or mobile=?", name,name).
 		Count(&count).Error
 
     if count == 0{
         return nil, false, err
     }
 
-    err = dao.DB.Model(&model.User{}).Where("user_name=?", name).
+    err = dao.DB.Model(&model.User{}).Where("user_name=? or mobile=?", name,name).
 		First(&user).Error
 	if err != nil {
 		return nil, false, err
