@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"go_ctry/dao"
 	"go_ctry/model"
 	"go_ctry/pkg/e"
@@ -193,22 +194,21 @@ func (service *Userservice) Login(ctx context.Context) serializer.Response {
 			}
 		}
 
-
 		if !exit {
 			code = e.ErrorNotCompare
 			return serializer.Response{
 				Status: code,
-				Msg: e.GetMsg(code),
+				Msg:    e.GetMsg(code),
 			}
-		} 
+		}
 
 		flag := user.CheckPassword(service.Pwd)
-		
+
 		if !flag {
 			code = e.ErrorNotCompare
 			return serializer.Response{
 				Status: code,
-				Msg: e.GetMsg(code),
+				Msg:    e.GetMsg(code),
 			}
 		}
 		token, refreshToken, err := util.MyGenerateToken(user.ID, user.UserName, 0, true)
@@ -448,6 +448,39 @@ func (service *Userservice) UploadHead(ctx context.Context, userid uint, file mu
 		Status: code,
 		Data:   serializer.BuildUser(user),
 		Msg:    e.GetMsg(code),
+	}
+
+}
+
+func (service *Userservice) UpdateToken(token string) serializer.Response {
+
+	code := e.SUCCESS
+
+	// 根据refreshtoken 刷新业务token
+	calim, err := util.ParseToken(token)
+	
+	if err != nil || !calim.Isrefresh {
+		code = e.ErrorAuthCheckTokenFail
+		return serializer.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+
+	token, _, err = util.MyGenerateToken(calim.ID, calim.Username, calim.Authority, false)
+
+	if err != nil {
+		code = e.ErrorAuthToken
+		return serializer.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+
+	return serializer.Response{
+		Status: code,
+		Msg:    e.GetMsg(code),
+		Data:   token,
 	}
 
 }

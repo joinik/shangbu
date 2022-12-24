@@ -14,6 +14,10 @@ func Migration() {
 			&model.User{},
 			&model.UserProfile{},
 			&model.Address{},
+			&model.Article{},
+			&model.ArtContent{},
+			&model.Spece{},
+			&model.Category{},
 		)
 
 	if err != nil {

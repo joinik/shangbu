@@ -23,6 +23,7 @@ func RegisterUser(c *gin.Context) {
 // 登录用户 Api
 func LoginUser(c *gin.Context) {
 	var loginUserServer service.Userservice
+
 	if err := c.ShouldBind(&loginUserServer); err == nil {
 		res := loginUserServer.Login(c.Request.Context())
 		c.JSON(200, res)
@@ -31,7 +32,7 @@ func LoginUser(c *gin.Context) {
 	}
 }
 
-
+// UpdatePwd 更新密码
 func UpdatePwd(c *gin.Context) {
 	var updatePwdService service.Userservice
 	claims, _ := util.ParseToken(c.GetHeader("Authorization"))
@@ -44,6 +45,19 @@ func UpdatePwd(c *gin.Context) {
 	}
 }
 
+func UpdateToken(c *gin.Context) {
+	updateTokenService := service.Userservice{}
+	// 获取刷新token 
+	refreshToken := c.GetHeader("Authorization")
+	if err := c.ShouldBind(&updateTokenService); err == nil {
+		res := updateTokenService.UpdateToken(refreshToken)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
+
+}
 
 
 // 修改用户信息

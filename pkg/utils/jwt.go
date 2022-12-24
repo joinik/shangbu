@@ -60,6 +60,7 @@ func MyGenerateToken(user_id uint, username string, authority int, need_refresh_
 			ID:        user_id,
 			Username:  username,
 			Authority: authority, // 权限用户
+			Isrefresh: true,
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: reEpiry.Unix(),
 				Issuer:    "go_ctry",
