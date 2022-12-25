@@ -16,6 +16,7 @@ type ArticleService struct {
 	Area    uint   `form:"area" json:"area"`
 	Content string `form:"content" json:"content"`
 	ArtID   uint   `form:"art_id" json:"art_id"`
+	OptionFlag uint `form:""`
 }
 
 // UploadArtPhoto 根据文章id 更新文章
@@ -192,7 +193,7 @@ func (service *ArticleService) GetArtsByCateID(ctx context.Context, cateID strin
 }
 
 
-// getArtsByCateID 根据分类id 查询文章信息
+// GetArtsByCateID 根据分类id 查询文章信息
 func (service *ArticleService) GetArtsByAreaID(ctx context.Context, areaID string) serializer.Response  {
 	code := e.SUCCESS
 
@@ -216,5 +217,83 @@ func (service *ArticleService) GetArtsByAreaID(ctx context.Context, areaID strin
 
 }
 
+
+// 根据文章ID 文章点赞
+func (service *ArticleService) ArtLiked(ctx context.Context, userid uint) serializer.Response {
+	code :=e.SUCCESS 
+
+	artDao := dao.NewArticleDao(ctx)
+
+	artRecord := &model.ArtRecord{
+		ArtID: service.ArtID,
+		UserID: userid,
+		Option: 1,
+	}
+
+
+	_, err := artDao.ArtLiked(service.ArtID, userid, artRecord)
+	if err !=nil {
+		code := e.ErrorDatabase
+		return serializer.Response{
+			Msg: e.GetMsg(code),
+			Status: code,
+		}
+	}
+
+	return serializer.Response{
+		Status: code,
+		Msg: e.GetMsg(code),
+	}
+
+}
+
+func (service *ArticleService) ArtDisliked(ctx context.Context, userid uint) serializer.Response {
+	code :=e.SUCCESS 
+
+	artDao := dao.NewArticleDao(ctx)
+
+	artRecord := &model.ArtRecord{
+		ArtID: service.ArtID,
+		UserID: userid,
+		Option: 2,
+	}
+
+
+
+	_, err := artDao.ArtLiked(service.ArtID, userid, artRecord)
+	if err !=nil {
+		code := e.ErrorDatabase
+		return serializer.Response{
+			Msg: e.GetMsg(code),
+			Status: code,
+		}
+	}
+
+	art, err :=artDao.GetArtByArtID(service.ArtID)
+
+	if err !=nil {
+		code := e.ErrorDatabase
+		return serializer.Response{
+			Msg: e.GetMsg(code),
+			Status: code,
+		}
+	}
+	// 文章点踩数+1 
+	art.DisLikeCount+=1
+	err = artDao.UpdateArt(art, service.ArtID, userid)
+
+	if err !=nil {
+		code := e.ErrorDatabase
+		return serializer.Response{
+			Msg: e.GetMsg(code),
+			Status: code,
+		}
+	}
+	return serializer.Response{
+		Status: code,
+		Msg: e.GetMsg(code),
+	}
+
+}
 
 
