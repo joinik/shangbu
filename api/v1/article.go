@@ -7,22 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// func UploadArtPhoto(c *gin.Context) {
-// 	var artService service.ArticleService
+func UpdateArt(c *gin.Context) {
+	var artService service.ArticleService
 
-// 	form, _ := c.MultipartForm()
-// 	files := form.File["upload[]"]
+	form, _ := c.MultipartForm()
+	files := form.File["upload"]
 
-// 	claim, _ := util.ParseToken(c.GetHeader("Authorization"))
-// 	if err := c.ShouldBind(&artService); err != nil {
-// 		res := artService.UploadArtPhoto(c.Request.Context(), claim.ID, files)
-// 		c.JSON(200, res)
-// 	} else {
-// 		c.JSON(400, ErrorResponse(err))
-// 		// util.LogrusObj.Infoln(err)
-// 	}
+	claim, _ := util.ParseToken(c.GetHeader("Authorization"))
+	if err := c.ShouldBind(&artService); err == nil {
+		res := artService.UploadArt(c.Request.Context(), claim.ID, files)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
 
-// }
+}
 
 func CreateArt(c *gin.Context) {
 	artService := service.ArticleService{}
@@ -41,7 +41,7 @@ func CreateArt(c *gin.Context) {
 
 func GetArt(c *gin.Context) {
 	artService := service.ArticleService{}
-	if err:= c.ShouldBind(&artService); err == nil {
+	if err := c.ShouldBind(&artService); err == nil {
 		artid := c.Param("artid")
 		res := artService.GetArtByArtID(c.Request.Context(), artid)
 		c.JSON(200, res)
@@ -53,7 +53,7 @@ func GetArt(c *gin.Context) {
 
 func GetArtContent(c *gin.Context) {
 	artService := service.ArticleService{}
-	if err:= c.ShouldBind(&artService); err == nil {
+	if err := c.ShouldBind(&artService); err == nil {
 		artid := c.Param("artid")
 		res := artService.GetContentByArtID(c.Request.Context(), artid)
 		c.JSON(200, res)
@@ -63,5 +63,26 @@ func GetArtContent(c *gin.Context) {
 	}
 }
 
+func GetArtsByCateID(c *gin.Context) {
+	var artService service.ArticleService
+	cateID := c.Param("id")
+	if err := c.ShouldBind(&artService); err == nil {
+		res := artService.GetArtsByCateID(c.Request.Context(), cateID)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
+}
 
-
+func GetArtsByAreaID(c *gin.Context) {
+	var artService service.ArticleService
+	cateID := c.Param("id")
+	if err := c.ShouldBind(&artService); err == nil {
+		res := artService.GetArtsByAreaID(c.Request.Context(), cateID)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
+}

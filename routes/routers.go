@@ -23,17 +23,22 @@ func NewRouter() *gin.Engine {
 	{
 		// 地址查询
 		v1.GET("area/:aid", api.GetArea)
+
 		// 文章信息查询
 		v1.GET("art/:artid", api.GetArt)
-
 		// 文章内容查询
 		v1.GET("artContent/:artid", api.GetArtContent)
+		// 根据分类id 查询文章信息 
+		v1.GET("artCate/:id", api.GetArtsByCateID)
+		// 根据地区id 查询文章信息 
+		v1.GET("artArea/:id", api.GetArtsByAreaID)
+
 
 		// 用户注册
 		v1.POST("register", api.RegisterUser)
-
 		// 用户登录
 		v1.POST("login", api.LoginUser)
+		// 刷新业务token
 		v1.GET("updateToken", api.UpdateToken)
 
 		// 需要登录保护的
@@ -51,7 +56,10 @@ func NewRouter() *gin.Engine {
 			authed.POST("uploadAvatar", api.UploadAvatar)
 
 			// --------文章相关api----------
+			// 文章创建
 			authed.POST("createArt", api.CreateArt)
+			// 文章更新
+			authed.PUT("updateArt", api.UpdateArt)
 		}
 
 	}

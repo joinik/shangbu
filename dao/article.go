@@ -22,9 +22,9 @@ func (dao *ArticleDao) Create(art *model.Article) (err error) {
 	return
 }
 
-// UpdateArtByAuthID 根据AuthID更新文章
-func (dao *ArticleDao) UpdateArtByAuthID(art *model.Article, authid uint) (err error) {
-	err = dao.DB.Model(&model.Article{}).Where("author_id=?", authid).Updates(&art).Error
+// UpdateArtByAuthID 根据AuthID和ArtID更新文章
+func (dao *ArticleDao) UpdateArt(art *model.Article, authid uint, artid uint) (err error) {
+	err = dao.DB.Model(&model.Article{}).Where("author_id=? and id=?", authid, artid).Updates(&art).Error
 	return
 }
 
@@ -36,9 +36,21 @@ func (dao *ArticleDao) GetArtByAuthID(authid uint) (art []*model.Article, err er
 
 // GetArtByAreaID 根据AreaID查询文章
 func (dao *ArticleDao) GetArtByAreaID(areaid uint) (art []*model.Article, err error) {
-	err = dao.DB.Model(&model.Article{}).Where("area_id=?", areaid).Find(&art).Error
+	err = dao.DB.Model(&model.Article{}).Where("area_id=?", areaid).
+	Preload("Cate").Preload("Area").Preload("Author").Find(&art).Error
 	return
 }
+
+// GetArtByCateID 根据CateID查询文章
+func (dao *ArticleDao) GetArtByCateID(cate_id uint) (art []*model.Article, err error) {
+	err = dao.DB.Model(&model.Article{}).Where("cate_id=?", cate_id).
+	Preload("Cate").Preload("Area").Preload("Author").Find(&art).Error
+	return
+}
+
+
+
+
 
 // GetArtContentByArtID 根据文章id查询文章信息
 func (dao *ArticleDao) GetArtByArtID(artid uint) (art *model.Article, err error) {

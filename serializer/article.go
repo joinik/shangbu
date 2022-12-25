@@ -48,6 +48,14 @@ func BuildArt(art *model.Article) Article {
 	}
 }
 
+func BuildArts(items []*model.Article) (arts []Article) {
+	for _, item := range items {
+		art := BuildArt(item)
+		arts = append(arts, art)
+	}
+	return arts
+}
+
 func BuildArtContent(artContent *model.ArtContent) ArtConet {
 	return ArtConet{
 		ID:      artContent.ArticleID,

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"go_ctry/dao"
 	"go_ctry/model"
 	"go_ctry/pkg/e"
@@ -458,7 +457,7 @@ func (service *Userservice) UpdateToken(token string) serializer.Response {
 
 	// 根据refreshtoken 刷新业务token
 	calim, err := util.ParseToken(token)
-	
+
 	if err != nil || !calim.Isrefresh {
 		code = e.ErrorAuthCheckTokenFail
 		return serializer.Response{
