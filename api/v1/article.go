@@ -99,3 +99,17 @@ func ArtLiked(c *gin.Context) {
 	}
 
 }
+
+
+func ArtDisliked(c *gin.Context) {
+	var artService service.ArticleService
+	claim, _ := util.ParseToken(c.GetHeader("Authorization"))
+	if err := c.ShouldBind(&artService); err == nil {
+		res := artService.ArtDisliked(c.Request.Context(), claim.ID)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
+
+}

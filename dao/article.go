@@ -22,8 +22,13 @@ func (dao *ArticleDao) Create(art *model.Article) (err error) {
 }
 
 // UpdateArtByAuthID 根据AuthID和ArtID更新文章
-func (dao *ArticleDao) UpdateArt(art *model.Article, authid uint, artid uint) (err error) {
-	err = dao.DB.Model(&model.Article{}).Where("author_id=? and id=?", authid, artid).Updates(&art).Error
+func (dao *ArticleDao) UpdateArt(art *model.Article, column string, value interface{}, artid uint) (err error) {
+	if art != nil {
+		err = dao.DB.Model(&model.Article{}).Where("id=?", artid).Updates(&art).Error
+	} else {
+		err = dao.DB.Model(&model.Article{}).Where("id=?", artid).Update(column, value).Error
+	}
+
 	return
 }
 
@@ -60,9 +65,9 @@ func (dao *ArticleDao) GetArtContentByArtID(artid uint) (art *model.ArtContent, 
 	return
 }
 
-func (dao *ArticleDao) ArtLiked(artid uint, userid uint, artRecord *model.ArtRecord) (art *model.Article, err error) {
+func (dao *ArticleDao) CreateArtRecord(artid uint, userid uint, artRecord *model.ArtRecord) (err error) {
 
-	// 创建文章点赞记录
+	// 创建文章点赞/ 点踩记录
 	err = dao.DB.Model(&model.ArtRecord{}).Create(&artRecord).Error
 	return
 }

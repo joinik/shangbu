@@ -18,6 +18,7 @@ func Migration() {
 			&model.ArtContent{},
 			&model.Spece{},
 			&model.Category{},
+			&model.ArtRecord{},
 		)
 
 	if err != nil {

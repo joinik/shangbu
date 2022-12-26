@@ -62,6 +62,8 @@ func NewRouter() *gin.Engine {
 			authed.PUT("updateArt", api.UpdateArt)
 			// 文章点赞
 			authed.POST("likeArt", api.ArtLiked)
+			// 文章点踩
+			authed.POST("dislikeArt", api.ArtDisliked)
 		}
 
 	}

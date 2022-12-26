@@ -111,7 +111,7 @@ type ArtRecord struct {
 	Art Article
 	UserID uint `gorm:"ForeignKey:UserID"`
 	User User
-	Option int64 `gorm:"type:tinyint(1); comment:'记录点赞(1)还是点踩(2)'"`
+	Option int64 `gorm:"type:tinyint(1); comment:'记录点赞(1)还是点踩(2)取消点赞(3)取消点踩(4)'"`
 }
 
 func (ArtRecord) TableName() string {
