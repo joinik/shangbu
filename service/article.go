@@ -22,7 +22,7 @@ type ArticleService struct {
 
 type ArtRecordService struct {
 	ArtID      uint `form:"art_id" json:"art_id" binding:"ne=0"`                    // 文章id
-	OptionFlag uint `form:"option_flag" json:"option_flag" binding:"oneof=1 2 3 4"` // 1 点赞 2 点踩，3 取消点赞，4 取消点踩
+	OptionFlag uint `form:"option" json:"option" binding:"oneof=1 2 3 4"` // 1 点赞 2 点踩，3 取消点赞，4 取消点踩
 
 }
 
@@ -326,13 +326,15 @@ func (service *ArtRecordService) ArtLiked(ctx context.Context, userID uint) seri
 		artRecord, _ = artDao.GetArtRecordByCondition(service.ArtID, userID, int64(service.OptionFlag))
 		wg.Done()
 	}()
-	if artRecord == nil {
+	if artRecord != nil {
 		code = e.ErrorCallApi
 		return serializer.Response{
 			Status: code,
 			Msg:    e.GetMsg(code),
 		}
 	}
+
+	// 进行业务判断 
 
 	if service.OptionFlag == 1 {
 		// OptionFlag == 1 表示点赞
@@ -343,9 +345,8 @@ func (service *ArtRecordService) ArtLiked(ctx context.Context, userID uint) seri
 				UserID: userID,
 				Option: 1, // 点赞记录
 			}
-
+			artDao = dao.NewArticleDaoByDB(artDao.DB)
 			err = artDao.CreateArtRecord(artRecord)
-
 			wg.Done()
 		}()
 
@@ -372,7 +373,7 @@ func (service *ArtRecordService) ArtLiked(ctx context.Context, userID uint) seri
 			}
 		}
 
-	} else if service.OptionFlag == 2 {
+	} else if service.OptionFlag == 3 {
 		// 取消点赞操作
 		wg.Add(2)
 		go func() {
@@ -408,6 +409,78 @@ func (service *ArtRecordService) ArtLiked(ctx context.Context, userID uint) seri
 			}
 		}
 
+	}else if service.OptionFlag == 2 {
+		// 点踩操作
+		wg.Add(2)
+		go func() {
+			artRecord := &model.ArtRecord{
+				ArtID:  service.ArtID,
+				UserID: userID,
+				Option: 2, // 2 点踩操作
+			}
+			artDao = dao.NewArticleDaoByDB(artDao.DB)
+			err = artDao.CreateArtRecord(artRecord)
+			wg.Done()
+		}()
+
+		if err != nil {
+			code := e.ErrorDatabase
+			return serializer.Response{
+				Msg:    e.GetMsg(code),
+				Status: code,
+			}
+		}
+
+		go func() {
+			// 文章点赞数 -=1
+			art.DisLikeCount += 1
+			artDao = dao.NewArticleDaoByDB(artDao.DB)
+			err = artDao.UpdateArt(art, "like_count", art.LikeCount)
+		}()
+		if err != nil {
+			code := e.ErrorDatabase
+			return serializer.Response{
+				Msg:    e.GetMsg(code),
+				Status: code,
+			}
+		}
+
+	}else if service.OptionFlag == 4 {
+		// 取消点踩操作
+		wg.Add(2)
+		go func() {
+			artRecord := &model.ArtRecord{
+				ArtID:  service.ArtID,
+				UserID: userID,
+				Option: 4, // 4 取消点踩
+			}
+			artDao = dao.NewArticleDaoByDB(artDao.DB)
+			err = artDao.CreateArtRecord(artRecord)
+			wg.Done()
+		}()
+
+		if err != nil {
+			code := e.ErrorDatabase
+			return serializer.Response{
+				Msg:    e.GetMsg(code),
+				Status: code,
+			}
+		}
+
+		go func() {
+			// 文章点踩数 -=1
+			art.DisLikeCount -= 1
+			artDao = dao.NewArticleDaoByDB(artDao.DB)
+			err = artDao.UpdateArt(art, "like_count", art.LikeCount)
+		}()
+		if err != nil {
+			code := e.ErrorDatabase
+			return serializer.Response{
+				Msg:    e.GetMsg(code),
+				Status: code,
+			}
+		}
+
 	}
 	wg.Wait()
 
@@ -418,105 +491,4 @@ func (service *ArtRecordService) ArtLiked(ctx context.Context, userID uint) seri
 
 }
 
-// 根据文章ID 文章点踩
-func (service *ArtRecordService) ArtDisliked(ctx context.Context, userid uint) serializer.Response {
-	code := e.SUCCESS
 
-	artDao := dao.NewArticleDao(ctx)
-
-	art, err := artDao.GetArtByArtID(service.ArtID)
-
-	if err != nil {
-		code := e.ErrorDatabase
-		return serializer.Response{
-			Msg:    e.GetMsg(code),
-			Status: code,
-		}
-	}
-
-	wg := new(sync.WaitGroup)
-	wg.Add(4)
-
-	if service.OptionFlag == 1 {
-
-		go func() {
-			// 点踩操作
-			artRecord := &model.ArtRecord{
-				ArtID:  service.ArtID,
-				UserID: userid,
-				Option: 2, // 点踩记录
-			}
-			artDao = dao.NewArticleDaoByDB(artDao.DB)
-			err = artDao.CreateArtRecord(artRecord)
-			wg.Done()
-		}()
-
-		if err != nil {
-			code := e.ErrorDatabase
-			return serializer.Response{
-				Msg:    e.GetMsg(code),
-				Status: code,
-			}
-		}
-
-		go func() {
-
-			// 文章点踩数+1
-			art.DisLikeCount += 1
-			artDao = dao.NewArticleDaoByDB(artDao.DB)
-			err = artDao.UpdateArt(art, "dis_like_count", art.DisLikeCount)
-			wg.Done()
-		}()
-
-		if err != nil {
-			code := e.ErrorDatabase
-			return serializer.Response{
-				Msg:    e.GetMsg(code),
-				Status: code,
-			}
-		}
-
-	} else {
-		go func() {
-			// 取消点踩 操作
-			artRecord := &model.ArtRecord{
-				ArtID:  service.ArtID,
-				UserID: userid,
-				Option: 4, // 取消点踩记录
-			}
-			artDao = dao.NewArticleDaoByDB(artDao.DB)
-			err = artDao.CreateArtRecord(artRecord)
-			wg.Done()
-		}()
-
-		if err != nil {
-			code := e.ErrorDatabase
-			return serializer.Response{
-				Msg:    e.GetMsg(code),
-				Status: code,
-			}
-		}
-
-		go func() {
-			// 文章点踩数 -1
-			art.DisLikeCount -= 1
-			artDao = dao.NewArticleDaoByDB(artDao.DB)
-			err = artDao.UpdateArt(art, "dis_like_count", art.DisLikeCount)
-			wg.Done()
-		}()
-
-		if err != nil {
-			code := e.ErrorDatabase
-			return serializer.Response{
-				Msg:    e.GetMsg(code),
-				Status: code,
-			}
-		}
-	}
-
-	return serializer.Response{
-		Status: code,
-		Msg:    e.GetMsg(code),
-	}
-
-}

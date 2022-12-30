@@ -64,10 +64,8 @@ func NewRouter() *gin.Engine {
 			authed.POST("createArt", api.CreateArt)
 			// 文章更新
 			authed.PUT("updateArt", api.UpdateArt)
-			// 文章点赞
-			authed.POST("likeArt", api.ArtLiked)
-			// 文章点踩
-			authed.POST("dislikeArt", api.ArtDisliked)
+			// 文章点赞 点踩 记录
+			authed.POST("likeArt", api.ArtRecord)
 
 			// --------评论相关api----------
 			// 评论创建 

@@ -28,7 +28,7 @@ func (service *CommentService) Post(ctx context.Context, userID uint) serializer
 	comDao := dao.NewCommentDao(ctx)
 
 	// 判断数据 是否为空
-	if service.Content == ""{
+	if service.Content == "" {
 		code = e.InvalidParams
 		return serializer.Response{
 			Status: code,
@@ -39,11 +39,11 @@ func (service *CommentService) Post(ctx context.Context, userID uint) serializer
 	com := &model.Comment{
 		Ccoment: service.Content,
 		UserID:  userID,
-		ArtID: service.Art,
+		ArtID:   service.Art,
 	}
 	if service.ParentID != 0 {
 		com.CparentID = service.ParentID
-	} 
+	}
 
 	err := comDao.Create(com)
 	if err != nil {
@@ -112,18 +112,10 @@ func (service *CommentService) Get(ctx context.Context) serializer.Response {
 func (service *ComRecordService) PostComRecord(ctx context.Context, userID uint) serializer.Response {
 	code := e.SUCCESS
 	dao := dao.NewCommentDao(ctx)
+	var err error
 
-	// if service.Opera != 1 || service.Opera != 0 {
-
-	// }
-
-	comRecord := &model.CommentRecord{
-		CommentID: service.ComID,
-		Opera:     service.Opera,
-		UserID:    userID,
-	}
-	err := dao.CreateComRecord(comRecord)
-
+	// 判断是否有此评论
+	com, err := dao.GetCommentByID(service.ComID)
 	if err != nil {
 		code = e.ErrorDatabase
 		return serializer.Response{
@@ -132,7 +124,14 @@ func (service *ComRecordService) PostComRecord(ctx context.Context, userID uint)
 		}
 	}
 
-	com, err := dao.GetCommentByID(service.ComID)
+	// 创建评论 点赞记录
+	comRecord := &model.CommentRecord{
+		CommentID: service.ComID,
+		Opera:     service.Opera,
+		UserID:    userID,
+	}
+	err = dao.CreateComRecord(comRecord)
+
 	if err != nil {
 		code = e.ErrorDatabase
 		return serializer.Response{
@@ -149,8 +148,12 @@ func (service *ComRecordService) PostComRecord(ctx context.Context, userID uint)
 		// 评论点赞数 -1
 		com.LikeCount -= 1
 	}
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go func() {
+		err = dao.UpdateCommentByID(&com)
 
-	dao.UpdateCommentByID(&com)
+	}()
 
 	if err != nil {
 		code = e.ErrorDatabase
@@ -159,6 +162,8 @@ func (service *ComRecordService) PostComRecord(ctx context.Context, userID uint)
 			Msg:    e.GetMsg(code),
 		}
 	}
+
+	wg.Wait()
 
 	return serializer.Response{
 		Status: code,
