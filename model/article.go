@@ -16,6 +16,7 @@ const (
 	BANNED     = 5 //  封禁
 )
 
+// 文章分类表
 type Category struct {
 	gorm.Model
 	CateName string `gorm:"unique; type:varchar(64); not null"`
@@ -84,6 +85,7 @@ func (ArtContent) TableName() string {
 	return "tb_article_content"
 }
 
+// 地区特色表
 type Spece struct {
 	gorm.Model
 	SpeIntr  string `gorm:"type:varchar(256); comment:'当地介绍'"`

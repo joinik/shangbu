@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/dlclark/regexp2"
 	"github.com/google/uuid"
 
 	// "time"
@@ -243,7 +244,8 @@ func (service *Userservice) UpdatePwd(ctx context.Context, uid uint) serializer.
 	userDao := dao.NewUserDao(ctx)
 
 	// 1.判断密码 合法性
-	if rest, _ := regexp.Match(`^(?:.*[A-Za-z])(?:.*\d)[A-Za-z\d]{4,18}$`, []byte(service.Pwd)); !rest {
+	re, _ := regexp2.Compile(`^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{6,20}$`, 0)
+	if rest, _ := re.FindStringMatch(service.Pwd); rest == nil {
 		return serializer.Response{
 			Status: code,
 			Msg:    "数据不正确",
@@ -451,6 +453,7 @@ func (service *Userservice) UploadHead(ctx context.Context, userid uint, file mu
 
 }
 
+// UpdateToken 更新token
 func (service *Userservice) UpdateToken(token string) serializer.Response {
 
 	code := e.SUCCESS

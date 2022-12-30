@@ -40,6 +40,10 @@ func NewRouter() *gin.Engine {
 		v1.POST("login", api.LoginUser)
 		// 刷新业务token
 		v1.GET("updateToken", api.UpdateToken)
+		// 评论查询
+		v1.POST("comments", api.GetComment)
+
+
 
 		// 需要登录保护的
 		authed := v1.Group("/")
@@ -64,6 +68,12 @@ func NewRouter() *gin.Engine {
 			authed.POST("likeArt", api.ArtLiked)
 			// 文章点踩
 			authed.POST("dislikeArt", api.ArtDisliked)
+
+			// --------评论相关api----------
+			// 评论创建 
+			authed.POST("createCom", api.CreateComment)
+			// 评论点赞 
+			authed.POST("createComRecord", api.CreateComRecord)
 		}
 
 	}
