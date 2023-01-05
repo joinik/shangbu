@@ -105,3 +105,11 @@ func (dao *ArticleDao) GetArtRecordByCondition(artID uint, userID uint, option i
 	err = dao.DB.Model(&model.ArtRecord{}).Where("art_id=?,user_id=?,option=?", artID,userID,option).Limit(1).First(&artRecord).Error
 	return
 }
+
+
+
+// ListCategory 查询所有类别
+func (dao *ArticleDao) ListCategory() (cates []*model.Category, err error)  {
+	err= dao.DB.Model(&model.Category{}).Find(&cates).Error
+	return 
+}

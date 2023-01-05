@@ -24,6 +24,8 @@ func NewRouter() *gin.Engine {
 		// 地址查询
 		v1.GET("area/:aid", api.GetArea)
 
+		v1.GET("cates",api.ListCate)
+
 		// 文章信息查询
 		v1.GET("art/:artid", api.GetArt)
 		// 文章内容查询

@@ -491,4 +491,25 @@ func (service *ArtRecordService) ArtLiked(ctx context.Context, userID uint) seri
 
 }
 
+func (service *ArticleService) GetCates(ctx context.Context) serializer.Response {
+	code := e.SUCCESS
+	artDao := dao.NewArticleDao(ctx)
+	cates, err := artDao.ListCategory()
+	if err !=nil {
+		code = e.ErrorDatabase
+		return serializer.Response{
+			Status: code,
+			Msg: e.GetMsg(code),
+		}
+	}
+
+	return serializer.Response{
+		Status: code,
+		Data: serializer.BuildListCate(cates),
+		Msg: e.GetMsg(code),
+	}
+
+
+}
+
 

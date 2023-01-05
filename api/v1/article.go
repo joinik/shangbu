@@ -101,4 +101,17 @@ func ArtRecord(c *gin.Context) {
 }
 
 
+func ListCate(c *gin.Context) {
+	var artService service.ArticleService
+	if err := c.ShouldBind(&artService); err == nil {
+		res := artService.GetCates(c.Request.Context())
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		// util.LogrusObj.Infoln(err)
+	}
+
+}
+
+
 

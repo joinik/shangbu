@@ -28,6 +28,11 @@ type ArtConet struct {
 	Content string `json:"content"`
 }
 
+type Cate struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
 func BuildArt(art *model.Article) Article {
 	return Article{
 		ID:        art.ID,
@@ -61,4 +66,15 @@ func BuildArtContent(artContent *model.ArtContent) ArtConet {
 		ID:      artContent.ArticleID,
 		Content: artContent.Content,
 	}
+}
+
+// BuildListCate 序列化所有分类
+func BuildListCate(itmes []*model.Category) (cates []Cate) {
+	for _, item := range itmes {
+		cates = append(cates, Cate{
+			ID:   item.ID,
+			Name: item.CateName,
+		})
+	}
+	return cates
 }
