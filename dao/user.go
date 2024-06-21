@@ -2,8 +2,8 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"go_ctry/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -53,8 +53,9 @@ func (dao *UserDao) ExitOrNotByPhone(mobile string) (user *model.User, err error
 	err = dao.DB.Model(&model.User{}).Where("mobile=?", mobile).
 		First(&user).Error
 	// 判断用户是否存在
-	fmt.Println("--------", user)
 	if err == nil {
+		// 更新用户登录时间
+		dao.DB.Model(&user).Update("last_login", time.Now())
 		return user, nil
 	} else {
 		// 用户不存在
