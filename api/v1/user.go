@@ -1,6 +1,7 @@
 package v1
 
 import (
+	util "go_ctry/pkg/utils"
 	"go_ctry/service"
 
 	"github.com/gin-gonic/gin"
@@ -37,3 +38,16 @@ func LoginUser(c *gin.Context) {
 // 	}
 
 // }
+
+func PostCollectAPI(c *gin.Context) {
+	postCollect := service.Userservice{}
+	claim, _ := util.ParseToken(c.GetHeader("Authorization"))
+	if err := c.ShouldBind(&postCollect); err == nil {
+		res := postCollect.PostCollect(c.Request.Context(), claim.ID)
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, ErrorResponse(err))
+		util.LogrusObj.Infoln(err)
+	}
+
+}

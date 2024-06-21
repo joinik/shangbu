@@ -16,17 +16,7 @@ func JWT() gin.HandlerFunc {
 		code = 200
 		token := c.GetHeader("Authorization")
 		if token == "" {
-			code = 404
-		} else {
-			claims, err := util.ParseToken(token)
-			if err != nil {
-				code = e.ErrorAuthCheckTokenFail
-			} else if time.Now().Unix() > claims.ExpiresAt {
-				code = e.ErrorAuthCheckTokenTimeout
-			}
-		}
-
-		if code != e.SUCCESS {
+			code = e.ErrorAuth
 			c.JSON(200, gin.H{
 				"status": code,
 				"msg":    e.GetMsg(code),
@@ -34,8 +24,17 @@ func JWT() gin.HandlerFunc {
 			})
 			c.Abort()
 			return
+		} else {
+			claims, err := util.ParseToken(token)
+			if err != nil {
+				code = e.ErrorAuthCheckTokenFail
+			} else if time.Now().Unix() > claims.ExpiresAt {
+				code = e.ErrorAuthCheckTokenTimeout
+			} else {
+				c.Set("claims", claims)
+				c.Next()
+			}
 		}
-		c.Next()
 	}
 }
 

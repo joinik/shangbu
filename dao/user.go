@@ -70,3 +70,18 @@ func (dao *UserDao) ExitOrNotByPhone(mobile string) (user *model.User, err error
 		return user, nil
 	}
 }
+
+/*
+ * @Description: 插入收藏ID到用户收藏表
+ * @param uId	用户ID
+ * @param cid	收藏ID切片
+ * @return err  错误信息
+ */
+func (dao *UserDao ) InsertCollectById(cid []int, uId uint) error {
+	var cols []map[string]interface{}
+	for _, v := range cid {
+		cols = append(cols, map[string]interface{}{"UserID": uId, "CollectID": v})
+	}
+	
+	return dao.DB.Model(&model.UserCollect{}).Create(&cols).Error	
+}

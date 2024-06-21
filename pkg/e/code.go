@@ -7,6 +7,9 @@ const (
 	ERROR                 = 500
 	InvalidParams         = 400
 
+	//收藏
+	CollectSuccess = 60001
+
 	//成员错误
 	ErrorExistNick          = 10001
 	ErrorExistUser          = 10002

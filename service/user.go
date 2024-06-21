@@ -18,12 +18,11 @@ type Userservice struct {
 	Mobile    string `form:"mobile" json:"mobile"`       // 手机号
 	Pwd       string `form:"pwd" json:"pwd"`
 	Introduce string `form:"introduce" json:"introduce"` // 简介
-	Business  uint   `form:"business" json:"business"`   // 商家标识
-	Gender    string `form:"gender" json:"gender"`
 	Age       uint   `form:"age" json:"age"`
 	Email     string `form:"email" json:"email"`     // 邮箱
 	Vcode     string `form:"vcode" json:"vcode"`     // 手机验证码
 	Options   string `form:"options" json:"options"` // 登录方式 1 手机登录的方式  2 账号登录方式
+	Collcts   []uint  `form:"collcts" json:"collcts"` //用户收藏 房屋id
 }
 
 // 用户登录
@@ -150,42 +149,36 @@ func (service *Userservice) Login(ctx context.Context) serializer.Response {
 // 		Msg:    e.GetMsg(code),
 // 	}
 
-<<<<<<< HEAD
-}
-
-// UpdateToken 更新token
-func (service *Userservice) UpdateToken(token string) serializer.Response {
-
-	code := e.SUCCESS
-
-	// 根据refreshtoken 刷新业务token
-	calim, err := util.ParseToken(token)
-
-	if err != nil || !calim.Isrefresh {
-		code = e.ErrorAuthCheckTokenFail
-		return serializer.Response{
-			Status: code,
-			Msg:    e.GetMsg(code),
-		}
-	}
-
-	token, _, err = util.MyGenerateToken(calim.ID, calim.Username, calim.Authority, false)
-
-	if err != nil {
-		code = e.ErrorAuthToken
-		return serializer.Response{
-			Status: code,
-			Msg:    e.GetMsg(code),
-		}
-	}
-
-	return serializer.Response{
-		Status: code,
-		Msg:    e.GetMsg(code),
-		Data:   token,
-	}
-
-}
-=======
 // }
->>>>>>> 95f4958 (refactor: 🚴重构用户登录模块)
+
+// PostCollect 实现了用户收藏功能的后端逻辑。
+// 该方法处理用户收藏房屋的请求。收藏操作是用户互动的一部分，通常与用户喜好或关注的内容相关。
+// 参数:
+//
+//	ctx context.Context: 上下文对象，用于传递请求相关的上下文信息，如请求ID、超时等。
+//
+// 返回值:
+//
+//	serializer.Response: 包含操作结果的响应对象。成功的收藏操作可能返回一个成功的响应代码和相关消息，
+//	                     而失败的操作可能返回错误代码和错误消息。
+func (service *Userservice) PostCollect(ctx context.Context, uid uint) serializer.Response {
+	code := e.CollectSuccess
+	userDao := dao.NewUserDao(ctx)
+	// 传入cid[],
+	err := userDao.InsertCollectById(service.Collcts, uid)
+	if err != nil {
+		logging.Info(err)
+		code = e.ErrorDatabase
+
+		return serializer.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+			Error:  err.Error(),
+		}
+	} else {
+		return serializer.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+}
