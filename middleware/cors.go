@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,8 +21,8 @@ func Cors() gin.HandlerFunc {
 			headerStr = fmt.Sprintf("acess-control-allow-origin, access-control-allow-headers, %s", headerStr)
 		} else {
 			headerStr = "acess-control-allow-origin, access-control-allow-headers"
-
 		}
+		fmt.Println("headerStr:", headerStr)
 
 		if origin != "" {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")

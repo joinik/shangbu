@@ -12,18 +12,9 @@ import (
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var code int
-		var data interface{}
-		code = 200
 		token := c.GetHeader("Authorization")
 		if token == "" {
 			code = e.ErrorAuth
-			c.JSON(200, gin.H{
-				"status": code,
-				"msg":    e.GetMsg(code),
-				"data":   data,
-			})
-			c.Abort()
-			return
 		} else {
 			claims, err := util.ParseToken(token)
 			if err != nil {
@@ -34,6 +25,14 @@ func JWT() gin.HandlerFunc {
 				c.Set("claims", claims)
 				c.Next()
 			}
+		}
+		if code != 200 {
+			c.JSON(200, gin.H{
+				"status": code,
+				"msg":    e.GetMsg(code),
+			})
+			c.Abort()
+			return
 		}
 	}
 }
