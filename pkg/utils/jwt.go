@@ -2,6 +2,7 @@ package util
 
 import (
 	"time"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -9,7 +10,7 @@ var jwtSecret = []byte("Python")
 
 type Claims struct {
 	ID        uint   `json:"id"`
-	Username  string `json"username"`
+	Username  string `json:"username"`
 	Authority int    `json:"authority"`
 	Isrefresh bool   `json:"isrefresh"`
 	jwt.StandardClaims
@@ -36,7 +37,7 @@ func ParseToken(token string) (*Claims, error) {
 func MyGenerateToken(user_id uint, username string, authority int, need_refresh_token bool) (string, string, error) {
 
 	// 生成业务token 2h有效期
-	expiry := time.Now().Add(2 * time.Hour)
+	expiry := time.Now().Add(24 * time.Hour)
 
 	claims := Claims{
 		ID:        user_id,

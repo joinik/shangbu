@@ -1,12 +1,8 @@
 package model
 
 import (
-	"database/sql/driver"
-	"errors"
-	"fmt"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -19,131 +15,79 @@ import (
 //   DeletedAt gorm.DeletedAt `gorm:"index"`
 // }
 
+// 定义角色 类型 和常量
+type Roles int
+
 const (
-	PassWordCost = 12 //密码加密难度
+	// 买家
+	Buyer Roles = iota + 1
+	// 经理
+	Manager
 )
 
-// User 用户基本模型
+// 给Roles 添加 toString 方法
+func (r Roles) String() string {
+	switch r {
+	case Buyer:
+		return "买家"
+	case Manager:
+		return "经理"
+	default:
+		return "未知"
+	}
+}
 
+// User 用户基本模型
 type User struct {
 	gorm.Model
-	UserName         string    `gorm:"unique; type:varchar(20)"` // 用户名
-	Mobile           string    `gorm:"unique; not null"`         // 手机号
-	Avatar           string    // 头像
-	Last_login       time.Time // 最后登陆时间
-	PassWorld        string    `gorm:"type:varchar(256)"` // 密码
-	Introduce        string    // 简介
-	Status           uint      `gorm:"default:1"`         // 状态 0 不可用  1 可用
-	Business         uint      `gorm:"default:0"`         // 商家认证 0 不是 1 是
-	Dianzan_num      uint      `gorm:"default:0"`         // 点赞数
-	Travel_note_num  uint      `gorm:"default:0"`         // 游记数
-	DianLiangAreaNum uint      `gorm:"default:0"`         // 点亮地区数
-	Last_area_id     uint      `gorm:"ForeignKey:AreaID"` // 用户上次位置
+	UserName   string    `gorm:"unique; type:varchar(20)"`                                   // 用户名
+	Mobile     string    `gorm:"unique; not null"`                                           // 手机号
+	Avatar     string    `gorm:"default:'https://m.sbwl.com/_nuxt/img/default.c462f6d.png'"` // 头像
+	Last_login time.Time // 最后登陆时间
+	Introduce  string    // 简介
+	Role       int       `gorm:"default:1"` // 角色 默认是买家
 
-	// has one
-	UserProfile UserProfile `gorm:"ForeignKey:UserID; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	// has many
+	UserCollects []UserCollect `gorm:"ForeignKey:UserID"`
 }
 
-func (user *User) SetPassword(password string) error {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), PassWordCost)
-	if err != nil {
-		return err
-	}
-	user.PassWorld = string(bytes)
-	return nil
+// BeforeCreate 是一个 GORM hook，在用户对象插入数据库之前被调用。
+// 它用于设置用户的最后登录时间为空值。
+//
+// 参数:
+//
+//	tx *gorm.DB: 数据库事务实例，可用于执行数据库操作。
+//
+// 返回值:
+//
+//	error: 如果操作中出现错误，返回该错误；否则返回 nil。
+func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	// 在用户创建之前，设置最后登录时间为当前时间。
+	// 在保存之前设置Last_login为当前时间
+	u.Last_login = time.Now()
+	return
 }
 
-func (user *User) CheckPassword(password string) bool  {
-	err := bcrypt.CompareHashAndPassword([]byte(user.PassWorld), []byte(password))
-	return err == nil
+// BeforeUpdate 是一个在用户信息更新之前自动执行的方法。
+// 它通过GORM的钩子机制来设置用户的最后登录时间。
+// 参数:
+//
+//	tx *gorm.DB: 数据库事务实例，用于执行数据库操作。
+//
+// 返回值:
+//
+//	error: 如果操作过程中出现错误，返回相应的错误信息；否则返回nil。
+func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
+	// 更新用户的最后登录时间为当前时间
+	// 在用户创建之前，设置最后登录时间为当前时间。
+	// 在保存之前设置Last_login为当前时间
+	u.Last_login = time.Now()
+	return
 }
 
-
-
-// 设置表名
-
-// func (User) TableName() string {
-// 	//实现TableName接口，以达到结构体和表对应，如果不实现该接口，并未设置全局表名禁用复数，gorm会自动扩展表名为articles（结构体+s）
-// 	return "user_basic"
-// }
-
-// 自定义性别
-type MyGender struct {
-	Gender []byte
-}
-
-func NewGender(v string) (MyGender, error) {
-	var g MyGender
-	if v != "MAN" && v != "WOMAN" {
-		return g, errors.New("只支持 “MAN” 或者 “WOMAN”")
-	}
-	g.Gender = []byte(v)
-	return g, nil
-}
-
-// 实现这两个 Value Scan 方法 才能满足 数据库读写
-func (g MyGender) Value() (driver.Value, error) {
-	return g.Gender, nil
-}
-
-func (g *MyGender) Scan(v interface{}) error {
-	// g.Gender = v.(string)
-	// g.Gender = v.([]uint8)
-
-	switch src := v.(type) {
-	case nil:
-		return nil
-
-	case string:
-		// if an empty gender comes from a table, we return a null gender
-		if src == "" {
-			return nil
-		}
-		g.Gender = []byte(src)
-
-	case []byte:
-		// if an empty gender comes from a table, we return a null gender
-		if len(src) == 0 {
-			return nil
-		}
-		g.Gender = src
-
-	default:
-		return fmt.Errorf("Scan: unable to scan type %T into Gender", src)
-	}
-
-	return nil
-}
-
-// User 用户详情模型
-type UserProfile struct {
-	UserProfileID    uint `gorm:"primaryKey"`
-	UserID           uint
-	UserGender       MyGender `gorm:"type: varchar(5); default: 'MAN'"`
-	Age              uint
-	Email            string `gorm:"type: varchar(20)"`
-	DefaultAddressID uint   `gorm:"default: null"`
-	// bloog to
-	DefaultAddress Address
-}
-
-// 用户地址表
-type Address struct {
+// 用户收藏模型
+type UserCollect struct {
 	gorm.Model
-	Title      string `gorm:"type: varchar(20)"`  // 地址名称
-	ProvinceID uint   `gorm:"ForeignKey: AreaID"` // 省
-	CityID     uint   `gorm:"ForeignKey: AreaID"` // 市
-	DistrictID uint   `gorm:"ForeignKey: AreaID"` // 区
-	Place      string `gorm:"type: varchar(30)"`
-
-	// belong to
-	Province Area `gorm:"ForeignKey: ProvinceID"`
-	City     Area `gorm:"ForeignKey: CityID"`
-	District Area `gorm:"ForeignKey: DistrictID"`
-}
-
-// 设置 表名
-func (Address) TableName() string {
-	//实现TableName接口，以达到结构体和表对应，如果不实现该接口，并未设置全局表名禁用复数，gorm会自动扩展表名为articles（结构体+s）
-	return "tb_address"
+	UserID    uint // 用户ID
+	CollectID uint // 收藏ID
 }

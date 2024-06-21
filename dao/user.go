@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"go_ctry/model"
 
 	"gorm.io/gorm"
@@ -27,34 +28,17 @@ func (dao *UserDao) UpdateUserById(uId uint, user *model.User) (err error) {
 
 }
 
-// GetProfileById 根据id 查询用户详情
-func (dao *UserDao) GetUserProfileById(uId uint) (userProfile *model.UserProfile,  err error) {
-	err = dao.DB.Model(&model.UserProfile{}).Where("user_id=?", uId).First(&userProfile).Error
-    return 
-}
-
-
-// UpdateUserProfileById 根据id 更新用户详情
-func (dao *UserDao) UpdateUserProfileById(uId uint, user *map[string]interface{}) (err error) {
-	return dao.DB.Model(&model.UserProfile{}).Where("user_id=?", uId).Updates(&user).Error
-
-}
-
-
-
-
-
 // ExitOrNotByUserName 根据手机号 查询用户是否存在
 func (dao *UserDao) ExitOrNotByUserName(name string) (user *model.User, exist bool, err error) {
 	var count int64
-	err = dao.DB.Model(&model.User{}).Where("user_name=? or mobile=?", name,name).
+	err = dao.DB.Model(&model.User{}).Where("user_name=? or mobile=?", name, name).
 		Count(&count).Error
 
-    if count == 0{
-        return nil, false, err
-    }
+	if count == 0 {
+		return nil, false, err
+	}
 
-    err = dao.DB.Model(&model.User{}).Where("user_name=? or mobile=?", name,name).
+	err = dao.DB.Model(&model.User{}).Where("user_name=? or mobile=?", name, name).
 		First(&user).Error
 	if err != nil {
 		return nil, false, err
@@ -63,27 +47,25 @@ func (dao *UserDao) ExitOrNotByUserName(name string) (user *model.User, exist bo
 }
 
 // ExitOrNotByPhone 根据手机号 查询用户是否存在
-func (dao *UserDao) ExitOrNotByPhone(mobile string) (user *model.User, exist bool, err error) {
-	var count int64
-	err = dao.DB.Model(&model.User{}).Where("mobile=?", mobile).
-		Count(&count).Error
+func (dao *UserDao) ExitOrNotByPhone(mobile string) (user *model.User, err error) {
 
-	if count == 0 {
-		return nil, false, err
-	}
-
+	// DB获取用户
 	err = dao.DB.Model(&model.User{}).Where("mobile=?", mobile).
 		First(&user).Error
-	if err != nil {
-		return nil, false, err
+	// 判断用户是否存在
+	fmt.Println("--------", user)
+	if err == nil {
+		return user, nil
+	} else {
+		// 用户不存在
+		user = &model.User{
+			Mobile:   mobile,
+			UserName: mobile,
+		}
+		err = dao.DB.Model(&model.User{}).Create(&user).Error
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
 	}
-	return user, true, nil
 }
-
-// CreateUser 创建用户
-func (dao *UserDao) CreateUser(user *model.User) (err error) {
-	err = dao.DB.Model(&model.User{}).Create(&user).Error
-	return
-}
-
-

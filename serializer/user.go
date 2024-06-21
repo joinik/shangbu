@@ -32,18 +32,6 @@ func BuildUser(user *model.User) User {
 		Avatar: user.Avatar,
 		Last_login: user.Last_login.Unix(),
 		Introduce: user.Introduce,
-		Status: user.Status,
 	}
 }
 
-// BuildUser 序列化用户
-func BuildUserProfile(userProfile *model.UserProfile) UserProfile {
-
-	return UserProfile{
-		ID:               userProfile.UserID,
-		Gender:           string(userProfile.UserGender.Gender),
-		Age:              userProfile.Age,
-		Email:            userProfile.Email,
-		DefaultAddressID: userProfile.DefaultAddressID,
-	}
-}

@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"gorm.io/plugin/dbresolver"
 )
 
 var _db *gorm.DB
@@ -33,6 +32,7 @@ func Database(connRead, connWrite string) {
 		Logger: ormLogger,
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
+			TablePrefix: "tb_",
 		},
 	})
 
@@ -51,12 +51,12 @@ func Database(connRead, connWrite string) {
 	_db = db
 
 	// 读写 分离设置
-	_db.Use(dbresolver.
-		Register(dbresolver.Config{
-			Sources:  []gorm.Dialector{mysql.Open(connRead)},                         //写操作
-			Replicas: []gorm.Dialector{mysql.Open(connWrite), mysql.Open(connWrite)}, // 读操作
-			Policy:   dbresolver.RandomPolicy{},                                      // sources/replicas 负载均很策略
-		}))
+	// _db.Use(dbresolver.
+	// 	Register(dbresolver.Config{
+	// 		Sources:  []gorm.Dialector{mysql.Open(connRead)},                         //写操作
+	// 		Replicas: []gorm.Dialector{mysql.Open(connWrite), mysql.Open(connWrite)}, // 读操作
+	// 		Policy:   dbresolver.RandomPolicy{},                                      // sources/replicas 负载均很策略
+	// 	}))
 
 	Migration()
 
