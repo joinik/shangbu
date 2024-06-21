@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,17 +11,16 @@ func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method               // 请求方法
 		origin := c.Request.Header.Get("Origin") // 请求头部
-		var HeaderKeys []string
-		for k := range c.Request.Header {
-			HeaderKeys = append(HeaderKeys, k) // 添加到切片
-		}
-		headerStr := strings.Join(HeaderKeys, ", ") // str 拼接
-		if headerStr != "" {
-			headerStr = fmt.Sprintf("acess-control-allow-origin, access-control-allow-headers, %s", headerStr)
-		} else {
-			headerStr = "acess-control-allow-origin, access-control-allow-headers"
-		}
-		fmt.Println("headerStr:", headerStr)
+		// var HeaderKeys []string
+		// for k := range c.Request.Header {
+		// 	HeaderKeys = append(HeaderKeys, k) // 添加到切片
+		// }
+		// headerStr := strings.Join(HeaderKeys, ", ") // str 拼接
+		// if headerStr != "" {
+		// 	headerStr = fmt.Sprintf("acess-control-allow-origin, access-control-allow-headers, %s", headerStr)
+		// } else {
+		// 	headerStr = "acess-control-allow-origin, access-control-allow-headers"
+		// }
 
 		if origin != "" {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")

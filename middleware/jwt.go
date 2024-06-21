@@ -11,22 +11,21 @@ import (
 // jwt  token验证中间件
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var code int
+		code := 200
+		var claims *util.Claims
+		var err error
 		token := c.GetHeader("Authorization")
 		if token == "" {
 			code = e.ErrorAuth
 		} else {
-			claims, err := util.ParseToken(token)
+			claims, err = util.ParseToken(token)
 			if err != nil {
 				code = e.ErrorAuthCheckTokenFail
 			} else if time.Now().Unix() > claims.ExpiresAt {
 				code = e.ErrorAuthCheckTokenTimeout
-			} else {
-				c.Set("claims", claims)
-				c.Next()
 			}
 		}
-		if code != 200 {
+		if code != e.SUCCESS {
 			c.JSON(200, gin.H{
 				"status": code,
 				"msg":    e.GetMsg(code),
@@ -34,6 +33,8 @@ func JWT() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		c.Set("claim", claims)
+		c.Next()
 	}
 }
 

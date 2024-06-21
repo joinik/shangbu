@@ -77,11 +77,39 @@ func (dao *UserDao) ExitOrNotByPhone(mobile string) (user *model.User, err error
  * @param cid	收藏ID切片
  * @return err  错误信息
  */
-func (dao *UserDao ) InsertCollectById(cid []int, uId uint) error {
-	var cols []map[string]interface{}
+func (dao *UserDao) InsertCollectById(cid []uint, uId uint) error {
+	// var cols []map[string]interface{}
+	// for _, v := range cid {
+	// 	cols = append(cols, map[string]interface{}{"UserID": uId, "CollectID": v})
+	// }
+
+	var cols []model.UserCollect
 	for _, v := range cid {
-		cols = append(cols, map[string]interface{}{"UserID": uId, "CollectID": v})
+		cols = append(cols, model.UserCollect{UserID: uId, CollectID: v})
 	}
-	
-	return dao.DB.Model(&model.UserCollect{}).Create(&cols).Error	
+
+	return dao.DB.Model(&model.UserCollect{}).Create(&cols).Error
+}
+
+// SelectCollectById 根据用户ID查询用户及其收藏信息。
+// 该方法使用GORM库来查询数据库，首先根据uId获取用户信息，然后预加载用户的收藏信息。
+// 参数:
+//
+//	uId - 用户的唯一标识符。
+//
+// 返回值:
+//
+//	*model.User - 查询到的用户对象。
+//	error - 如果查询过程中出现错误，则返回错误对象；否则返回nil。
+func (dao *UserDao) SelectCollectById(uId uint) (user *model.User, err error) {
+	// 使用GORM的Model方法指定查询的模型，这里是model.User。
+	// Preload方法用于预加载关联的数据，这里是用户的收藏信息。
+	// First方法根据uId查询数据库，将查询结果存储到user变量中。
+	err = dao.DB.Model(&model.User{}).Preload("UserCollects").First(&user, uId).Error
+	// 如果查询过程中出现错误，返回nil和错误对象。
+	if err != nil {
+		return nil, err
+	}
+	// 如果查询成功，返回查询到的用户对象和nil。
+	return user, nil
 }
